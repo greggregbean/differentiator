@@ -9,12 +9,13 @@
 
 enum types
 {
-    NUM = 1,
-    VAR = 2,
-    MUL = 42,
-    ADD = 43,
-    DED = 45,
-    SUB = 47
+    NUM = 'n',
+    VAR = 'v',
+    POW = '^',
+    MUL = '*',
+    ADD = '+',
+    DIV = '-',
+    SUB = '/'
 };
 
 union value
@@ -38,11 +39,26 @@ class tree
 
     public:
         tree();
+        void textDump();
+        void graphDump(FILE* filep);
         void reader(FILE* filep);
+        void differentiator();
 };
 
+//DUMP:
+void recursiveGraph(FILE* filep, treeEl* node);
+void recursiveDump(treeEl* node);
+void nodeDump(treeEl* node);
+void fprintVal(FILE* filep, treeEl* node);
+void printVal(treeEl* node);
+
+//READER:
 void spaceSkip(FILE* filep);
-treeEl* treeInsert(int type, value val);
-void recursiveReader(FILE* filep);
+treeEl* AddDivParse(FILE* filep);
+treeEl* MulSubPowParse(FILE* filep);
+treeEl* VarNumParse(FILE* filep);
+
+//DIFFERENTIATOR:
+treeEl* recursiveDif(treeEl* node);
 
 #endif

@@ -1,0 +1,24 @@
+digraph 
+{
+543835392 [shape=record, fillcolor = wheat1, style = filled, label = " {/ | Addr: 0x5618206a4500 | {Left: 0x5618206a5540 | Right: 0x5618206a57b0 }}" ] 
+543835392 -> 543839552 [label = " Left "]; 
+543839552 [shape=record, fillcolor = wheat1, style = filled, label = " {- | Addr: 0x5618206a5540 | {Left: 0x5618206a5570 | Right: 0x5618206a5780 }}" ] 
+543839552 -> 543839600 [label = " Left "]; 
+543839600 [shape=record, fillcolor = wheat1, style = filled, label = " {^ | Addr: 0x5618206a5570 | {Left: 0x5618206a55a0 | Right: 0x5618206a56c0 }}" ] 
+543839600 -> 543839648 [label = " Left "]; 
+543839648 [shape=record, fillcolor = wheat1, style = filled, label = " {- | Addr: 0x5618206a55a0 | {Left: 0x5618206a5600 | Right: 0x5618206a5660 }}" ] 
+543839648 -> 543839744 [label = " Left "]; 
+543839744 [shape=record, fillcolor = wheat1, style = filled, label = " {12 | Addr: 0x5618206a5600 | {Left: (nil) | Right: (nil) }}" ] 
+543839648 -> 543839840 [label = " Right "]; 
+543839840 [shape=record, fillcolor = wheat1, style = filled, label = " {5.234 | Addr: 0x5618206a5660 | {Left: (nil) | Right: (nil) }}" ] 
+543839600 -> 543839936 [label = " Right "]; 
+543839936 [shape=record, fillcolor = wheat1, style = filled, label = " {* | Addr: 0x5618206a56c0 | {Left: 0x5618206a56f0 | Right: 0x5618206a5720 }}" ] 
+543839936 -> 543839984 [label = " Left "]; 
+543839984 [shape=record, fillcolor = wheat1, style = filled, label = " {4.78 | Addr: 0x5618206a56f0 | {Left: (nil) | Right: (nil) }}" ] 
+543839936 -> 543840032 [label = " Right "]; 
+543840032 [shape=record, fillcolor = wheat1, style = filled, label = " {2 | Addr: 0x5618206a5720 | {Left: (nil) | Right: (nil) }}" ] 
+543839552 -> 543840128 [label = " Right "]; 
+543840128 [shape=record, fillcolor = wheat1, style = filled, label = " {148 | Addr: 0x5618206a5780 | {Left: (nil) | Right: (nil) }}" ] 
+543835392 -> 543840176 [label = " Right "]; 
+543840176 [shape=record, fillcolor = wheat1, style = filled, label = " {100 | Addr: 0x5618206a57b0 | {Left: (nil) | Right: (nil) }}" ] 
+}

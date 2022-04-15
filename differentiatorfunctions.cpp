@@ -1,5 +1,6 @@
 #include "differentiator.h"
 
+//TREE METHODS:
 tree::tree()
 {
     head_ = new treeEl{};
@@ -7,37 +8,99 @@ tree::tree()
     head_ -> right = nullptr;
 }
 
-void printVal(treeEl* node)
-{
-    if(node -> type == NUM)
-        printf("%lg", node -> val.number);
-
-    else
-        printf("%c", node -> val.varOrOper);
-}
-
-/*void recursiveDump(treeEl* node)
-{
-    printf("(");
-
-    printVal(node);
-
-    if (node -> left != nullptr)
-        recursiveDump(node -> left);
-    if (node -> right != nullptr)
-        recursiveDump(node -> right);
-
-    printf(")");
-}*/
-
-/*void tree::textDump()
+void tree::textDump()
 {
     printf("Text dump: ");
     recursiveDump(head_);
     printf("\n");
-}*/
+}
 
+void tree::graphDump(FILE* filep)
+{
+    printf("GraphDump: ");
 
+    fprintf(filep, "digraph \n{\n");
+    recursiveGraph(filep, head_);
+    fprintf(filep, "}");
+
+    printf("your graph in \"graph.dot\". \n");
+}
+
+void tree::reader(FILE* filep)
+{
+    printf("READER: \n");
+    head_ = AddDivParse(filep);
+    printf("\n");
+}
+
+void tree::differentiator()
+{
+    printf("+++DIFFERENTIATOR+++: \n");
+    recursiveDif(head_);
+    printf("\n");
+}
+
+//DUMP:
+void recursiveGraph(FILE* filep, treeEl* node)
+{
+    fprintf(filep, "%d [shape=record, fillcolor = wheat1, style = filled, label = \" {", node); 
+    fprintVal(filep, node);
+    fprintf(filep, " | Addr: %p | {Left: %p | Right: %p }}\" ] \n", (void*) node, (void*) node -> left, (void*) node -> right);
+    
+    if (node -> left != nullptr)
+    {
+        fprintf(filep, "%d -> %d [label = \" Left \"]; \n", node, node -> left); 
+        recursiveGraph(filep, node -> left);
+    }
+
+    if (node -> right != nullptr)
+    {
+        fprintf(filep, "%d -> %d [label = \" Right \"]; \n", node, node -> right); 
+        recursiveGraph(filep, node -> right);
+    }
+}
+
+void recursiveDump(treeEl* node)
+{
+    printf("(");
+    
+    if (node -> left != nullptr)
+        recursiveDump(node -> left);
+    
+    printVal(node);
+
+    if (node -> right != nullptr)
+        recursiveDump(node -> right);
+
+    printf(")");    
+}
+
+void nodeDump(treeEl* node)
+{
+    printf("Addr: %p, Left: %p, Right: %p, Type: %c, Value: ", (void*)node, (void*)node -> left, (void*)node -> right, node -> type);
+    printVal(node);
+    printf("\n");
+}
+
+void fprintVal(FILE* filep, treeEl* node)
+{
+    if(node -> type == NUM)
+        fprintf(filep, "%lg", (node -> val).number);
+
+    else
+        fprintf(filep, "%c", (node -> val).varOrOper);
+}
+
+void printVal(treeEl* node)
+{
+    if(node -> type == NUM)
+        printf("%lg", (node -> val).number);
+
+    else
+        printf("%c", (node -> val).varOrOper);
+}
+
+//READER:
 void spaceSkip(FILE* filep)
 {
     char symbol;
@@ -45,129 +108,161 @@ void spaceSkip(FILE* filep)
     ungetc(symbol, filep);
 }
 
-void nodeDump(treeEl* node)
-{
-    printf("Addr: %p, Left: %p, Right: %p, Type: %c, Value: ", (void*)node, (void*)node -> left, (void*)node -> right, node -> type);
-    printVal(node);
-}
+treeEl* AddDivParse(FILE* filep)
+{ 
+    printf("Зашли в AddDivParse.\n");
 
-treeEl* treeInsert(int type, value val_)
-{
-    treeEl* node = new treeEl{};
+    treeEl* addOrDiv = new treeEl{};
 
-    node -> left  = nullptr;
-    node -> right = nullptr;
-
-    if (type == NUM)
-    {
-        node -> type = NUM;
-        (node -> val).number = val_.number;
-    }
-
-    if (type == VAR)
-    {
-        node -> type = VAR;
-        (node -> val).varOrOper = val_.varOrOper;
-    }
-
-    if (type == MUL)
-    {
-        node -> type = MUL;
-        (node -> val).varOrOper = MUL;
-    }
-
-    if (type == ADD)
-    {
-        node -> type = ADD;
-        (node -> val).varOrOper = ADD;
-    }
-
-    if (type == DED)
-    {
-        node -> type = DED;
-        (node -> val).varOrOper = DED;
-    }
-
-    if (type == SUB)
-    {
-        node -> type = SUB;
-        (node -> val).varOrOper = SUB;
-    }
-
-    return node;
-}
-
-void recursiveReader (FILE* filep)
-{   
-    //Пропускаем '('
-    assert(getc(filep) == '(');
+    addOrDiv -> left = MulSubPowParse(filep);
 
     spaceSkip(filep);
-    
+
     char symbol = getc(filep);
-    printf("Сейчас мы на: %c. \n", symbol);
-
-    int type = 0;
-    value val = {};
-
-    if((symbol <= '9') && (symbol >= '0'))
-    {
-        ungetc(symbol, filep);
-
-        printf("Это число. \n");
-
-        double num;
-        fscanf(filep,"%lg", &num);
-
-        printf("Оно равно %lg", num);
-
-        type = NUM;
-        val.number = num;
-    }
-
-    if(symbol == MUL)
-    {
-        printf("Это оператор умножения. \n");
-        type = MUL;
-    }
+    printf("В AddDiv считали %c. \n", symbol);
 
     if(symbol == ADD)
     {
-        printf("Это оператор сложения. \n");
-        type = ADD;
+        addOrDiv -> type = ADD;
+        (addOrDiv -> val).varOrOper = ADD;
+        printf("Сделали узел +. \n");
     }
 
-    if(symbol == DED)
+    else if(symbol == DIV)
     {
-        printf("Это оператор вычитания. \n");
-        type = DED;
+        addOrDiv -> type = DIV;
+        (addOrDiv -> val).varOrOper = DIV;
     }
 
-    if(symbol == SUB)
+    else 
     {
-        printf("Это оператор деления. \n");
-        type = SUB;
+        ungetc(symbol, filep);
+        printf("Вышли из AddDivParse. \n");
+        return addOrDiv -> left;
+    }
+
+    addOrDiv -> right = MulSubPowParse(filep);
+
+    nodeDump(addOrDiv);
+
+    printf("Вышли из AddDivParse. \n");
+
+    return addOrDiv;
+}
+
+treeEl* MulSubPowParse(FILE* filep)
+{
+    printf("Зашли в MulSubParse.\n");
+
+    treeEl* mulOrSubOrPow = new treeEl{};
+
+    mulOrSubOrPow -> left = VarNumParse(filep);
+
+    spaceSkip(filep);
+
+    char symbol = getc(filep);
+    printf("В MulSub считали %c. \n", symbol);
+
+    if(symbol == MUL)
+    {
+        mulOrSubOrPow -> type = MUL;
+        (mulOrSubOrPow -> val).varOrOper = MUL;
+    }
+
+    else if(symbol == SUB)
+    {
+        mulOrSubOrPow -> type = SUB;
+        (mulOrSubOrPow -> val).varOrOper = SUB;
+    }
+
+    else if(symbol == POW)
+    {
+        mulOrSubOrPow -> type = POW;
+        (mulOrSubOrPow -> val).varOrOper = POW;    
     }
 
     else
     {
-        printf("Это переменная. \n");
-        type = VAR;
-        val.varOrOper = symbol;
+        ungetc(symbol, filep);
+        printf("Вышли из MulSubPowParse. \n");
+        return mulOrSubOrPow -> left;
     }
 
-    treeEl* node = treeInsert(type, val);
-    nodeDump(node);
+    mulOrSubOrPow -> right = VarNumParse(filep);
 
+    nodeDump(mulOrSubOrPow);
+
+    printf("Вышли из MulSubPowParse. \n");
+
+    return mulOrSubOrPow;
 }
 
-
-
-void tree::reader(FILE* filep)
+treeEl* VarNumParse(FILE* filep)
 {
-    printf("READER: \n");
+    printf("Зашли в VarNumParse.\n");
 
-    //Запустили рекурсивную читалку буффера
-    recursiveReader(filep);
-    printf("\n");
+    spaceSkip(filep);
+
+    char symbol = getc(filep);
+    
+    if((symbol <= '9') && (symbol >= '0'))
+    {
+        ungetc(symbol, filep);
+
+        treeEl* num = new treeEl{};
+
+        num -> type = NUM;
+        fscanf(filep, "%lg", &((num -> val).number));
+        num -> left  = nullptr;
+        num -> right = nullptr;
+
+        symbol = getc(filep);
+
+        nodeDump(num);
+        
+        printf("Cчитали %lg, следующий символ \"%c\". \n", (num -> val).number, symbol);
+        ungetc(symbol, filep); 
+
+        printf("Вышли из VarNumParse. \n");
+        
+        return num;
+    }
+
+    else if ((symbol >= 'a') && (symbol <= 'z'))
+    {
+        treeEl* var = new treeEl{};
+
+        var -> type = VAR;
+        (var -> val).varOrOper = symbol;
+        var -> left  = nullptr;
+        var -> right = nullptr;
+
+        nodeDump(var);
+
+        printf("Cчитали %c, следующий символ \"%c\". \n", (var -> val).varOrOper, symbol);
+        ungetc(symbol, filep);
+
+        printf("Вышли из VarNumParse. \n");
+
+        return var;
+    }
+
+    else if (symbol == '(')
+    {
+        treeEl* equation = AddDivParse(filep);
+        if((symbol = getc(filep)) == ')')
+        {
+            printf("Считали выражение в скобках. \n");
+            printf("Вышли из VarNumParse. \n");
+            return equation;
+        }
+    }
+
+    printf("!!! Wrong syntax !!! \n");
+
+    return nullptr;
 }
+
+//DIFFERENTIATOR:
+
+
