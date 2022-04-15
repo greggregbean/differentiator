@@ -2,8 +2,7 @@
 
 tree::tree()
 {
-    head_ = new treeEl;
-    head_ -> value -> number = 0;
+    head_ = new treeEl{};
     head_ -> left = nullptr;
     head_ -> right = nullptr;
 }
@@ -11,197 +10,164 @@ tree::tree()
 void printVal(treeEl* node)
 {
     if(node -> type == NUM)
-        printf("%lg", node -> value -> number);
-
-    else if(node -> type == VAR)
-        printf("%c", node -> value -> variable);
+        printf("%lg", node -> val.number);
 
     else
-        printf("%c", node -> value -> operator);
+        printf("%c", node -> val.varOrOper);
 }
 
-void recursiveDump(treeEl* node)
+/*void recursiveDump(treeEl* node)
 {
     printf("(");
 
     printVal(node);
 
     if (node -> left != nullptr)
-        recursiveDump(node -> yes);
+        recursiveDump(node -> left);
     if (node -> right != nullptr)
-        recursiveDump(node -> no);
+        recursiveDump(node -> right);
 
     printf(")");
-}
+}*/
 
-void tree::textDump()
+/*void tree::textDump()
 {
     printf("Text dump: ");
     recursiveDump(head_);
     printf("\n");
-}
-
-/*treeEl* treeInsert (value val)
-{   
-    treeEl* newNode = new treeEl{};
-
-    if(type == DOUBLE)
-
-    newNode -> left = nullptr;
-    newNode -> right = nullptr;
-
-    return newNode;
 }*/
 
-double charToDouble(char* treeBuf, int* index)
+
+void spaceSkip(FILE* filep)
 {
-    while(treeBuf[*index] <= 9)
-    {
-        (*index)++;
-    }
-
-    int afterdot = 0;
-
-    if(treeBuf[*index] == '.')
-    {
-        (*index)++;
-
-        while(treeBuf[*index] <= 9)
-        {
-            afterdot--;
-            (*index)++;
-        }   
-    }
-
-    (*index)--;
-
-    double num = 0;
-
-    for(afterdot; (treeBuf[*index] <= 9) || (treeBuf[*index] == '.'); afterdot++)
-    {
-        if(treeBuf[*index] == '.')
-        {
-            (*index--);
-            afterdot = -1;
-            continue;
-        }
-
-        num += (treeBuf[*index] - '0') * pow(10, afterdot);
-        (*index)--;
-    }
-
-    while((treeBuf[(*index) + 1] <= 9) || (treeBuf[(*index) + 1] == '.'))
-    {
-        (*index)++;
-    }
-
-    return num;
+    char symbol;
+    while(((symbol = getc(filep)) == ' ') || (symbol == '\t')) ;
+    ungetc(symbol, filep);
 }
 
-treeEl* recursiveReader (char* treeBuf, int* index)
-{   
-    //Пропускаем '('
-    assert(treeBuf[*index] == '(');
-    (*index)++;
+void nodeDump(treeEl* node)
+{
+    printf("Addr: %p, Left: %p, Right: %p, Type: %c, Value: ", (void*)node, (void*)node -> left, (void*)node -> right, node -> type);
+    printVal(node);
+}
 
-    value newEl = new value{};
-    int type;
+treeEl* treeInsert(int type, value val_)
+{
+    treeEl* node = new treeEl{};
 
-    //Проверяем встрети ли мы переменную или число
-    if(treeBuf[*index] >= 10)
+    node -> left  = nullptr;
+    node -> right = nullptr;
+
+    if (type == NUM)
     {
-        if(treeBuf[*index] == MUl)
-        {
-            newEl -> operator = MUL;
-            type = MUL;
-        }
-
-        else if(treeBuf[*index] == ADD)
-        {
-            newEl -> operator = ADD;
-            type = ADD;
-        }
-
-        else if(treeBuf[*index] == DED)
-        {
-            newEl -> operator = DED;
-            type = DED;
-        }
-
-        else if(treeBuf[*index] == SUB)
-        {
-            newEl -> operator = SUB;
-            type = SUB;
-        }
-
-        else
-        {
-            newEl -> variable = treeBuf[*index];
-            type = VAR;
-        }
+        node -> type = NUM;
+        (node -> val).number = val_.number;
     }
 
-    else
+    if (type == VAR)
     {
-        newEl -> number = charToDouble(treeBuf, index);
-        type = NUM;
-    }
-    
-    //Cоздаем новый узел
-    treeEl* node = treeInsert();
-
-    //Если есть '{' рекурсивно вызываем функцию для поддерева yes
-    if(treeBuf[(*index)] == '{')
-    {
-        node -> yes = recursiveReader(treeBuf, index); 
-        node -> no = recursiveReader(treeBuf, index);
+        node -> type = VAR;
+        (node -> val).varOrOper = val_.varOrOper;
     }
 
-    nodeDump(node);
-    assert(treeBuf[(*index)] == '}');
+    if (type == MUL)
+    {
+        node -> type = MUL;
+        (node -> val).varOrOper = MUL;
+    }
 
-    (*index)++;
+    if (type == ADD)
+    {
+        node -> type = ADD;
+        (node -> val).varOrOper = ADD;
+    }
+
+    if (type == DED)
+    {
+        node -> type = DED;
+        (node -> val).varOrOper = DED;
+    }
+
+    if (type == SUB)
+    {
+        node -> type = SUB;
+        (node -> val).varOrOper = SUB;
+    }
 
     return node;
 }
 
-void liner(FILE* fp, char* treeBuf)
-{
-    char symbol = getc(fp);
+void recursiveReader (FILE* filep)
+{   
+    //Пропускаем '('
+    assert(getc(filep) == '(');
 
-    int i = 0;
+    spaceSkip(filep);
+    
+    char symbol = getc(filep);
+    printf("Сейчас мы на: %c. \n", symbol);
 
-    while(symbol != EOF)
+    int type = 0;
+    value val = {};
+
+    if((symbol <= '9') && (symbol >= '0'))
     {
-        if(symbol)
-        if((symbol != '\n') && (symbol != ' ') && (symbol != '\r') && (symbol != '\t'))
-        {
-            treeBuf[i] = symbol; 
-            i++;
-        }
+        ungetc(symbol, filep);
 
-        symbol = getc(fp);
+        printf("Это число. \n");
+
+        double num;
+        fscanf(filep,"%lg", &num);
+
+        printf("Оно равно %lg", num);
+
+        type = NUM;
+        val.number = num;
     }
+
+    if(symbol == MUL)
+    {
+        printf("Это оператор умножения. \n");
+        type = MUL;
+    }
+
+    if(symbol == ADD)
+    {
+        printf("Это оператор сложения. \n");
+        type = ADD;
+    }
+
+    if(symbol == DED)
+    {
+        printf("Это оператор вычитания. \n");
+        type = DED;
+    }
+
+    if(symbol == SUB)
+    {
+        printf("Это оператор деления. \n");
+        type = SUB;
+    }
+
+    else
+    {
+        printf("Это переменная. \n");
+        type = VAR;
+        val.varOrOper = symbol;
+    }
+
+    treeEl* node = treeInsert(type, val);
+    nodeDump(node);
+
 }
 
-void tree::reader(FILE* textTree)
+
+
+void tree::reader(FILE* filep)
 {
     printf("READER: \n");
 
-    //Закинули всё в буффер
-    char* treeBuf = (char*) calloc(TREEBUFLEN, sizeof(char)); 
-    liner(textTree, treeBuf);
-
-    //Распечатали буффер
-    printf("Data in buffer: ");
-    for(int i = 0; treeBuf[i] != '\0'; i++)
-    {
-        printf("%c", treeBuf[i]);
-    }
-    printf("\n");
-
     //Запустили рекурсивную читалку буффера
-    int index = 0;
-    head_ = recursiveReader(treeBuf, &index);
+    recursiveReader(filep);
     printf("\n");
 }

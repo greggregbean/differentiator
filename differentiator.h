@@ -7,8 +7,6 @@
 #include <string.h>
 #include <cmath>
 
-#define TREEBUFLEN 100
-
 enum types
 {
     NUM = 1,
@@ -21,14 +19,13 @@ enum types
 
 union value
 {
-    char variable;
+    char varOrOper;
     double number;
-    char operator;
 };
 
 struct treeEl
 {
-    union value;
+    value val;
     int type;
     treeEl* left;
     treeEl* right;
@@ -41,13 +38,11 @@ class tree
 
     public:
         tree();
-        void textDump();
-        void reader(FILE* textTree);
+        void reader(FILE* filep);
 };
 
-void recursiveDump(treeEl* node);
-void liner(FILE* fp, char* treeBuf);
-double charToDouble(char* treeBuf, int* index)
-treeEl* recursiveReader(char* treeBuf, int* index);
+void spaceSkip(FILE* filep);
+treeEl* treeInsert(int type, value val);
+void recursiveReader(FILE* filep);
 
 #endif
