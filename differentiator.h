@@ -11,10 +11,10 @@ enum types
 {
     NUM = 'n',
     VAR = 'v',
-    POW = '^',
-    MUL = '*',
     ADD = '+',
     DIV = '-',
+    POW = '^',
+    MUL = '*',
     SUB = '/'
 };
 
@@ -59,6 +59,7 @@ treeEl* MulSubPowParse(FILE* filep);
 treeEl* VarNumParse(FILE* filep);
 
 //DIFFERENTIATOR:
+treeEl* newTreeEl(int type, value val, treeEl* left, treeEl* right);
 treeEl* recursiveDif(treeEl* node);
 
 #endif

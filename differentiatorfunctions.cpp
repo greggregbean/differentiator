@@ -264,5 +264,105 @@ treeEl* VarNumParse(FILE* filep)
 }
 
 //DIFFERENTIATOR:
+treeEl* newTreeEl(int type, value val, treeEl* left, treeEl* right)
+{
+    treeEl* node = new treeEl{};
+
+    node -> left = left;
+    node -> right = right;
+
+    switch (node -> type)
+    {
+        case NUM:
+        {     
+            node -> type = NUM;
+            (node -> val).number = val.number;
+            break;
+        }
+
+        case VAR:
+        {
+            node -> type = VAR;
+            (node -> val).varOrOper = val.varOrOper;
+            break;
+        }
+
+        case ADD:
+        {
+            node -> type = ADD;
+            (node -> val).varOrOper = ADD;
+            break;
+        } 
+
+        case DIV:
+        {
+            node -> type = DIV;
+            (node -> val).varOrOper = DIV;
+            break;
+        }
+
+        case POW:
+        {
+            node -> type = POW;
+            (node -> val).varOrOper= POW;
+            break;
+        }
+
+        case MUL:
+        {
+            node -> type = MUL;
+            (node -> val).varOrOper = MUL;
+            break;
+        }
+
+        case SUB:
+        {
+            node -> type = SUB;
+            (node -> val).varOrOper = SUB;
+            break;
+        }
+    }
+
+    return node;
+}
+
+treeEl* recursiveDif(treeEl* node)
+{
+    switch (node -> type)
+    {
+        case NUM:
+        {
+            node -> val = 0;
+            return node;
+        }
+
+        case VAR:
+        {
+            node -> val = 1;
+            node -> type = VAR;
+            return node;
+        }
+
+        case POW:
+        {
+            ((node -> right -> val).number)--;
+
+            if(((node -> right -> val).number) == "0")
+            {
+                node -> right = nullptr;
+                node -> left  = nullptr;
+                node -> type  = NUM;
+                (node -> val).number = 1;
+
+                return node;
+            }
+
+            else if(((node -> right -> val).number) == "1")
+            {
+                // ОСТАНОВИЛИСЬ ЗДЕСЬ
+            }
+        }
+    }
+}
 
 
