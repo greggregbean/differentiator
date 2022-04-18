@@ -11,8 +11,8 @@ tree::tree()
 void tree::textDump()
 {
     printf("Text dump: ");
-    recursiveDump(head_);
-    printf("\n");
+    recursiveDump(head_, head_);
+    printf("\n\n");
 }
 
 void tree::graphDump(FILE* filep)
@@ -29,14 +29,15 @@ void tree::graphDump(FILE* filep)
 void tree::reader(FILE* filep)
 {
     printf("READER: \n");
-    head_ = AddDivParse(filep);
+    head_ = MainParse(filep);
     printf("\n");
 }
 
 void tree::differentiator()
 {
-    printf("+++DIFFERENTIATOR+++: \n");
-    recursiveDif(head_);
+    printf("+++DIFFERENTIATOR+++  \n");
+    head_ = recursiveDif(head_);
+    printf("---DIFFERENTIATOR---  \n");
     printf("\n");
 }
 
@@ -60,19 +61,21 @@ void recursiveGraph(FILE* filep, treeEl* node)
     }
 }
 
-void recursiveDump(treeEl* node)
+void recursiveDump(treeEl* node, treeEl* head)
 {
-    printf("(");
+    if((node -> type != NUM) && (node -> type != VAR) && (node != head))
+        printf("(");
     
     if (node -> left != nullptr)
-        recursiveDump(node -> left);
+        recursiveDump(node -> left, head);
     
     printVal(node);
 
     if (node -> right != nullptr)
-        recursiveDump(node -> right);
+        recursiveDump(node -> right, head);
 
-    printf(")");    
+    if((node -> type != NUM) && (node -> type != VAR) && (node != head))
+        printf(")");    
 }
 
 void nodeDump(treeEl* node)
@@ -100,12 +103,82 @@ void printVal(treeEl* node)
         printf("%c", (node -> val).varOrOper);
 }
 
+//НАДО ДОРАБОТАТЬ
+/*void AddDivDump(treeEl* node)
+{
+    if(node -> left != nullptr)
+        MulSubDump(node -> left);
+
+    printVal(node);
+
+    if(node -> right != nullptr)
+        MulSubDump(node -> right);
+}
+
+void MulSubDump(treeEl* node)
+{
+    if(node -> left != nullptr)
+        PowDump(node -> left);
+
+    printVal(node);
+
+    if(node -> right != nullptr)
+        PowDump(node -> right);
+}
+
+void PowDump(treeEl* node)
+{
+    if(node -> left != nullptr)
+        VarNumDump(node -> left);
+
+    printVal(node);
+
+    if(node -> right != nullptr)
+        VarNumDump(node -> right);
+}
+
+void VarNumDump(treeEl* node)
+{
+    if ((node -> type == NUM) || (node -> type == VAR))
+        printVal(node);
+
+    else
+    {
+        printf("(");
+        AddDivDump(node);
+        printf(")");
+    }
+}*/
+
+
 //READER:
 void spaceSkip(FILE* filep)
 {
     char symbol;
-    while(((symbol = getc(filep)) == ' ') || (symbol == '\t')) ;
+    while(((symbol = getc(filep)) == ' ') || (symbol == '\t') || (symbol == '\r') || (symbol == '\n')) ;
     ungetc(symbol, filep);
+}
+
+treeEl* MainParse(FILE* filep)
+{
+    printf("Зашли в MainParse");
+
+    treeEl* mainNode = new treeEl{};
+
+    mainNode -> left = AddDivParse(filep);
+
+    spaceSkip(filep);
+
+    char symbol = getc(filep);
+    printf("В MainParse считали %c. \n", symbol);
+
+    if(symbol == '$')
+        printf("Уравнение считано верно. \nВышли из MainParse.\n");
+
+    else
+        printf("Не обнаружен закрывающий символ '$'. \n");
+
+    return mainNode -> left;
 }
 
 treeEl* AddDivParse(FILE* filep)
@@ -114,12 +187,12 @@ treeEl* AddDivParse(FILE* filep)
 
     treeEl* addOrDiv = new treeEl{};
 
-    addOrDiv -> left = MulSubPowParse(filep);
+    addOrDiv -> left = MulSubParse(filep);
 
     spaceSkip(filep);
 
     char symbol = getc(filep);
-    printf("В AddDiv считали %c. \n", symbol);
+    printf("В AddDivParse считали %c. \n", symbol);
 
     if(symbol == ADD)
     {
@@ -141,7 +214,7 @@ treeEl* AddDivParse(FILE* filep)
         return addOrDiv -> left;
     }
 
-    addOrDiv -> right = MulSubPowParse(filep);
+    addOrDiv -> right = MulSubParse(filep);
 
     nodeDump(addOrDiv);
 
@@ -150,13 +223,13 @@ treeEl* AddDivParse(FILE* filep)
     return addOrDiv;
 }
 
-treeEl* MulSubPowParse(FILE* filep)
+treeEl* MulSubParse(FILE* filep)
 {
     printf("Зашли в MulSubParse.\n");
 
-    treeEl* mulOrSubOrPow = new treeEl{};
+    treeEl* mulOrSub = new treeEl{};
 
-    mulOrSubOrPow -> left = VarNumParse(filep);
+    mulOrSub -> left = PowParse(filep);
 
     spaceSkip(filep);
 
@@ -165,36 +238,65 @@ treeEl* MulSubPowParse(FILE* filep)
 
     if(symbol == MUL)
     {
-        mulOrSubOrPow -> type = MUL;
-        (mulOrSubOrPow -> val).varOrOper = MUL;
+        mulOrSub -> type = MUL;
+        (mulOrSub -> val).varOrOper = MUL;
     }
 
     else if(symbol == SUB)
     {
-        mulOrSubOrPow -> type = SUB;
-        (mulOrSubOrPow -> val).varOrOper = SUB;
-    }
-
-    else if(symbol == POW)
-    {
-        mulOrSubOrPow -> type = POW;
-        (mulOrSubOrPow -> val).varOrOper = POW;    
+        mulOrSub -> type = SUB;
+        (mulOrSub -> val).varOrOper = SUB;
     }
 
     else
     {
         ungetc(symbol, filep);
-        printf("Вышли из MulSubPowParse. \n");
-        return mulOrSubOrPow -> left;
+        printf("Вышли из MulSubParse. \n");
+        return mulOrSub -> left;
     }
 
-    mulOrSubOrPow -> right = VarNumParse(filep);
+    mulOrSub -> right = PowParse(filep);
 
-    nodeDump(mulOrSubOrPow);
+    nodeDump(mulOrSub);
 
-    printf("Вышли из MulSubPowParse. \n");
+    printf("Вышли из MulSubParse. \n");
 
-    return mulOrSubOrPow;
+    return mulOrSub;
+}
+
+treeEl* PowParse(FILE* filep)
+{
+    printf("Зашли в PowParse.\n");
+
+    treeEl* pow = new treeEl{};
+
+    pow -> left = VarNumParse(filep);
+
+    spaceSkip(filep);
+
+    char symbol = getc(filep);
+    printf("В MulSub считали %c. \n", symbol);
+
+    if(symbol == POW)
+    {
+        pow -> type = POW;
+        (pow -> val).varOrOper = POW;    
+    }
+
+    else
+    {
+        ungetc(symbol, filep);
+        printf("Вышли из PowParse. \n");
+        return pow -> left;
+    }
+
+    pow -> right = VarNumParse(filep);
+
+    nodeDump(pow);
+
+    printf("Вышли из PowParse. \n");
+
+    return pow;
 }
 
 treeEl* VarNumParse(FILE* filep)
@@ -216,10 +318,9 @@ treeEl* VarNumParse(FILE* filep)
         num -> left  = nullptr;
         num -> right = nullptr;
 
-        symbol = getc(filep);
-
         nodeDump(num);
-        
+
+        symbol = getc(filep);
         printf("Cчитали %lg, следующий символ \"%c\". \n", (num -> val).number, symbol);
         ungetc(symbol, filep); 
 
@@ -239,6 +340,7 @@ treeEl* VarNumParse(FILE* filep)
 
         nodeDump(var);
 
+        symbol = getc(filep);
         printf("Cчитали %c, следующий символ \"%c\". \n", (var -> val).varOrOper, symbol);
         ungetc(symbol, filep);
 
@@ -258,7 +360,7 @@ treeEl* VarNumParse(FILE* filep)
         }
     }
 
-    printf("!!! Wrong syntax !!! \n");
+    printf("!!! Wrong syntax !!!\n");
 
     return nullptr;
 }
@@ -271,10 +373,10 @@ treeEl* newTreeEl(int type, value val, treeEl* left, treeEl* right)
     node -> left = left;
     node -> right = right;
 
-    switch (node -> type)
+    switch (type)
     {
         case NUM:
-        {     
+        {      
             node -> type = NUM;
             (node -> val).number = val.number;
             break;
@@ -332,35 +434,65 @@ treeEl* recursiveDif(treeEl* node)
     {
         case NUM:
         {
-            node -> val = 0;
+            (node -> val).number = 0;
+            printf("Продифференцировали число. \n");
             return node;
         }
 
         case VAR:
         {
-            node -> val = 1;
-            node -> type = VAR;
+            (node -> val).number = 1;
+            node -> type = NUM;
+            printf("Продифференцировали переменную. \n");
             return node;
         }
 
         case POW:
         {
+            //Проверяем равна ли степень 0:
+            if((node -> right -> val).number == 0)
+            {
+                value zero;
+                zero.number = 0;
+                treeEl* zeroEl = newTreeEl(NUM, zero, nullptr, nullptr); 
+                printf("Возвращаем 0. \n");   
+                return zeroEl;
+            }
+
+            //Проверяем равна ли степень 1:
+            else if((node -> right -> val).number == 1)
+                return recursiveDif(node -> left);
+
+            //Если же степень больше 1:
+            value val;
+            val.varOrOper = MUL;
+            treeEl* oldDegree = newTreeEl(NUM, node -> right -> val, nullptr, nullptr);
+            treeEl* mulOldDegree = newTreeEl(MUL, val, node, oldDegree);
             ((node -> right -> val).number)--;
+            nodeDump(mulOldDegree);
+            nodeDump(oldDegree);
+            nodeDump(node);
+            nodeDump(node -> right);
+            nodeDump(node -> left);
 
-            if(((node -> right -> val).number) == "0")
+            //Проверяем, является ли выражение в степени простой переменной:
+            if(node -> left -> type == VAR)
             {
-                node -> right = nullptr;
-                node -> left  = nullptr;
-                node -> type  = NUM;
-                (node -> val).number = 1;
-
-                return node;
+                printf("Возвращаем mulOldDegree. \n");
+                return mulOldDegree;
             }
 
-            else if(((node -> right -> val).number) == "1")
-            {
-                // ОСТАНОВИЛИСЬ ЗДЕСЬ
-            }
+            //Иначе производную скобки домножаем на производную внутреннего выражения: 
+            treeEl* mulDif = newTreeEl(MUL, val, mulOldDegree, recursiveDif(node ->left));
+            nodeDump(mulDif);
+            printf("Возвращаем mulDif. \n");
+            return mulDif;
+        }
+
+        default:
+        {
+            printf("!!!Differentiator doesn't know this function!!! \n");
+            return nullptr;
         }
     }
 }

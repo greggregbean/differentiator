@@ -47,16 +47,24 @@ class tree
 
 //DUMP:
 void recursiveGraph(FILE* filep, treeEl* node);
-void recursiveDump(treeEl* node);
+void recursiveDump(treeEl* node, treeEl* head);
 void nodeDump(treeEl* node);
 void fprintVal(FILE* filep, treeEl* node);
 void printVal(treeEl* node);
 
+//НАДО ДОРАБОТАТЬ
+/*void AddDivDump(treeEl* node);
+void MulSubDump(treeEl* node);
+void PowDump(treeEl* node);
+void VarNumDump(treeEl* node);*/
+
 //READER:
 void spaceSkip(FILE* filep);
+treeEl* MainParse(FILE* filep);
 treeEl* AddDivParse(FILE* filep);
-treeEl* MulSubPowParse(FILE* filep);
+treeEl* MulSubParse(FILE* filep);
 treeEl* VarNumParse(FILE* filep);
+treeEl* PowParse(FILE* filep);
 
 //DIFFERENTIATOR:
 treeEl* newTreeEl(int type, value val, treeEl* left, treeEl* right);
