@@ -1,4 +1,12 @@
 digraph 
 {
--754653696 [shape=record, fillcolor = wheat1, style = filled, label = " {0 | Addr: 0x561ad304e600 | {Left: (nil) | Right: (nil) }}" ] 
+-1075403424 [shape=record, fillcolor = wheat1, style = filled, label = " {^ | Addr: 0x5598bfe6a560 | {Left: 0x5598bfe6b5a0 | Right: 0x5598bfe6b5d0 }}" ] 
+-1075403424 -> -1075399264 [label = " Left "]; 
+-1075399264 [shape=record, fillcolor = wheat1, style = filled, label = " {x | Addr: 0x5598bfe6b5a0 | {Left: (nil) | Right: (nil) }}" ] 
+-1075403424 -> -1075399216 [label = " Right "]; 
+-1075399216 [shape=record, fillcolor = wheat1, style = filled, label = " {^ | Addr: 0x5598bfe6b5d0 | {Left: 0x5598bfe6b600 | Right: 0x5598bfe6b660 }}" ] 
+-1075399216 -> -1075399168 [label = " Left "]; 
+-1075399168 [shape=record, fillcolor = wheat1, style = filled, label = " {3 | Addr: 0x5598bfe6b600 | {Left: (nil) | Right: (nil) }}" ] 
+-1075399216 -> -1075399072 [label = " Right "]; 
+-1075399072 [shape=record, fillcolor = wheat1, style = filled, label = " {1 | Addr: 0x5598bfe6b660 | {Left: (nil) | Right: (nil) }}" ] 
 }
